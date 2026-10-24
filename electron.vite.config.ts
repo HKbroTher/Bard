@@ -1,0 +1,15 @@
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "electron-vite";
+import { resolve } from "node:path";
+
+export default defineConfig({
+  main: {},
+  preload: {},
+  renderer: {
+    root: resolve(__dirname, "src/renderer"),
+    resolve: {
+      alias: { "@shared": resolve(__dirname, "src/shared") },
+    },
+    plugins: [react()],
+  },
+});

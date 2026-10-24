@@ -1,7 +1,8 @@
 node_modules/
+out/
+release/
 dist/
-data/
 *.db
-*.db-journal
-.env
+*.db-*
 *.tsbuildinfo
+.DS_Store

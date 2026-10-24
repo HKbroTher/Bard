@@ -1,89 +1,93 @@
-# 多语言商务邮件助手 · Mail Assistant
+<p align="center"><img src="build/icon.png" width="96" alt="Bard"></p>
 
-一个网页工具，用 LLM 起草和翻译 **中文 / English / 日本語** 商务邮件。
+<h1 align="center">Bard</h1>
 
-**技术栈：** TypeScript · React (Vite) · Node.js (Express) · SQLite (`node:sqlite`) · Anthropic Claude API
+<p align="center">多语言商务邮件助手 · 中文 / English / 日本語<br>桌面软件，支持 macOS、Windows、Linux</p>
+
+![Bard 主界面](docs/home.png)
 
 ## 功能
 
-- **起草邮件**：从要点生成完整邮件（主题 + 正文），要点可以用任何语言写。
-  - 8 种场景的提示词模板：开发信、跟进、询价、报价回复、会议邀约、感谢信、致歉、自定义
-  - 6 种语气：礼貌 / 亲切 / 自信 / 简洁 / 歉意 / 紧急
-  - 3 档正式程度，每种语言各有规则（例如日语的丁寧語与尊敬語・謙譲語、中文的「此致 敬礼」、英文的 Dear / Hi）
-  - 可粘贴之前的邮件，用于跟进或回复
-- **翻译 / 本地化**：三种语言互译，可选「地道本地化」或「忠实直译」，也可以同时调整语气和正式程度。
-- **术语表**：维护三语术语对照（产品名、技术术语、贸易术语）。
-  - 生成和翻译前，自动找出原文中出现的术语，并写进提示词作为必须遵守的约束
-  - 生成后检查输出是否用了规定译法，并标出不一致的术语
-  - 英文术语可设为区分大小写（如 `iCore`）；拉丁字母术语按词边界匹配（`API` 不会匹配到 `rapid`）
-  - 支持 CSV 导入 / 导出（示例：[`examples/glossary-sample.csv`](examples/glossary-sample.csv)）
-- **流式输出**：结果实时显示，生成后可以编辑、复制、用邮件客户端打开，或一键转去翻译。
-- **历史记录**：每次生成都存入 SQLite。
+- **对话式写邮件**：写下要点（任何语言都可以），Bard 生成完整邮件。之后可以直接说“再正式一点”“加一句可提供免费样品”，也可以点快捷按钮（更正式、更简短、强化行动号召……）。每次修改都保留为一个新版本。
+- **9 种场景模板**：开发信、跟进、询价、报价回复、会议邀约、感谢信、致歉、翻译邮件、自由撰写。
+- **语气与正式程度**：6 种语气、3 档正式程度，并按每种语言的商务习惯来写，例如日语的敬語、中文的“此致 敬礼”、英文的 Dear / Hi。
+- **翻译与本地化**：点一下就能把邮件翻成另外两种语言，可选“地道本地化”或“忠实直译”。
+- **术语表**：维护产品名和专业术语的三语对照。Bard 会自动找出邮件中出现的术语，要求模型使用规定写法，并在结果下方标出没有统一的术语。支持 CSV 导入和导出（示例见 [`examples/glossary-sample.csv`](examples/glossary-sample.csv)）。
+- **自带 API Key，支持多家模型服务**：
 
-## 快速开始
+  | 服务商 | 接入方式 |
+  |---|---|
+  | Claude（Anthropic） | 官方 SDK |
+  | OpenAI | 官方 SDK |
+  | Google Gemini | 官方 SDK |
+  | DeepSeek、通义千问、Kimi、智谱 GLM | OpenAI 兼容接口 |
+  | 自定义 | 任何 OpenAI 兼容接口，如 Ollama 本地模型、中转服务 |
 
-需要 Node.js ≥ 22.13（使用内置的 `node:sqlite`）。
+  可以添加多个服务，随时在输入框右下角切换。API Key 用系统钥匙串加密保存（macOS 钥匙串、Windows DPAPI、Linux libsecret），只保存在本机。
+- **中英双语界面**，深色和浅色主题（可跟随系统）。
+- **数据全部保存在本机**的 SQLite 数据库中，包括邮件记录、术语表和设置。
+
+| 对话式修改 | 深色模式 · 英文界面 |
+|---|---|
+| ![对话](docs/conversation.png) | ![深色](docs/home-dark-en.png) |
+
+| 首次启动：连接模型 | 术语表 |
+|---|---|
+| ![引导](docs/onboarding.png) | ![术语表](docs/glossary.png) |
+
+## 安装
+
+在 GitHub 仓库的 **Actions → Release** 页面点 **Run workflow**，会自动打包三个平台的安装包：
+
+| 平台 | 安装包 |
+|---|---|
+| macOS（Apple 芯片和 Intel） | `Bard-x.y.z-mac-arm64.dmg` / `Bard-x.y.z-mac-x64.dmg` |
+| Windows | `Bard-x.y.z-win-x64.exe` |
+| Linux | `Bard-x.y.z-linux-x86_64.AppImage` / `.deb` |
+
+推送 `v1.0.0` 这样的标签，还会自动创建 GitHub Release，并附上全部安装包。
+
+> 安装包目前没有代码签名，第一次打开时：
+> - **macOS**：在“访达”里右键点击 Bard →“打开”；或者在“系统设置 → 隐私与安全性”里点“仍要打开”。
+> - **Windows**：SmartScreen 提示时，点“更多信息”→“仍要运行”。
+>
+> 要去掉这些提示，需要在 CI 中配置签名证书（`CSC_LINK`、`CSC_KEY_PASSWORD`，macOS 公证还需要 `APPLE_ID` 等）。
+
+## 开发
+
+需要 Node.js 22.13 或更高版本。
 
 ```bash
 npm install
-cp .env.example .env      # 填写 ANTHROPIC_API_KEY
-npm run dev               # API: http://localhost:3001  Web: http://localhost:5173
-```
-
-没有配置 API Key 时会自动进入**模拟模式**：返回示例文本，方便在离线状态下体验界面和术语检查流程。
-
-生产构建：
-
-```bash
-npm run build
-npm start                 # 由 Express 同时提供 API 和前端页面，访问 http://localhost:3001
-```
-
-### 环境变量
-
-| 变量 | 默认值 | 说明 |
-|---|---|---|
-| `ANTHROPIC_API_KEY` | — | Claude API Key |
-| `LLM_MODEL` | `claude-opus-5-5` | 使用的模型 |
-| `LLM_EFFORT` | `medium` | `low` / `medium` / `high` / `xhigh` / `max`，越高越细致，但更慢、更贵 |
-| `LLM_MOCK` | 自动 | `1` 强制使用模拟模式，`0` 强制调用真实 API |
-| `PORT` | `3001` | 服务端口 |
-| `DB_PATH` | `data/mail-assistant.db` | SQLite 数据库文件路径 |
-
-## 项目结构
-
-```
-server/src/
-  prompts.ts    场景、语气、正式程度模板与提示词构建
-  glossary.ts   术语匹配、输出一致性检查、CSV 解析
-  llm.ts        Claude 流式调用（含拒答回退）与模拟客户端
-  db.ts         SQLite：术语表、历史记录
-  app.ts        Express 路由（SSE 流式输出、zod 校验）
-  shared.ts     前后端共用的类型
-web/src/
-  pages/        起草、翻译、术语表、历史
-  components/   结果面板、分段选择器
-```
-
-## API
-
-| 方法 | 路径 | 说明 |
-|---|---|---|
-| GET | `/api/meta` | 可选的场景、语气、语言、正式程度 |
-| POST | `/api/draft` | 起草邮件（SSE 流） |
-| POST | `/api/translate` | 翻译邮件（SSE 流） |
-| GET/POST | `/api/glossary` | 查询（`?q=`）/ 新增术语 |
-| PUT/DELETE | `/api/glossary/:id` | 修改 / 删除术语 |
-| POST | `/api/glossary/import` | 导入 CSV（`text/csv`） |
-| GET | `/api/glossary/export.csv` | 导出 CSV |
-| GET | `/api/history` | 历史记录 |
-| DELETE | `/api/history/:id` | 删除一条历史记录 |
-
-SSE 事件格式：`{type:"delta",text}`（逐段文本）→ `{type:"done",subject,body,glossary,historyId}`（结束），出错时为 `{type:"error",message}`。
-
-## 测试
-
-```bash
-npm test          # vitest：术语匹配、提示词构建、输出解析、API 集成测试
+npm run dev          # 启动开发版（支持热更新）
+npm test             # 单元测试：提示词、术语表、对话流程、各服务商接口
 npm run typecheck
+npm run dist         # 为当前系统打包；也可用 dist:mac / dist:win / dist:linux
 ```
+
+设置 `BARD_MOCK=1` 后，服务商列表里会多出一个离线的“Demo”服务，不需要 API Key 就能体验完整流程。
+
+### 项目结构
+
+```
+src/
+  main/                 Electron 主进程
+    providers/          各服务商适配（Claude / OpenAI 兼容 / Gemini）与预设
+    prompts.ts          场景、语气、正式程度模板和系统提示词
+    chat.ts             对话流程：历史记录、术语匹配、流式输出
+    glossary.ts         术语匹配、一致性检查、CSV
+    db.ts               SQLite：设置、服务商（Key 加密）、对话、术语表
+    ipc.ts              主进程与界面之间的通信接口
+  preload/              安全地把接口暴露给界面（window.bard）
+  renderer/             React 界面
+    src/views/          首页、对话、术语表、设置、首次启动引导
+    src/components/     输入框、邮件卡片、菜单、服务商表单……
+    src/i18n.ts         中英文界面文案
+  shared/               主进程和界面共用的类型
+build/                  应用图标
+.github/workflows/      CI 测试与三平台打包
+```
+
+### 使用 Claude 时
+
+默认模型是 `claude-opus-5-5`。对支持的模型，Bard 会把 effort 设为 `medium`，并开启服务端拒答回退（`fallbacks: "default"`）：如果模型的安全分类器拒绝了请求，API 会自动换用推荐的备用模型重试。
