@@ -1,11 +1,17 @@
 name: Release
 
 # Builds installers for macOS, Windows and Linux.
-# Run it from the Actions tab, or push a tag such as v1.0.0 to also publish a GitHub Release.
+# Run it from the Actions tab (optionally with a version such as v1.0.0 to publish a GitHub Release),
+# or push a tag such as v1.0.0.
 on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version, e.g. v1.0.0 (leave empty to only build)"
+        required: false
+        default: ""
 
 permissions:
   contents: write
@@ -47,7 +53,7 @@ jobs:
           if-no-files-found: error
 
   publish:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/v') || inputs.version != ''
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -58,4 +64,7 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           files: dist/**/*
+          tag_name: ${{ inputs.version || github.ref_name }}
+          name: Bard ${{ inputs.version || github.ref_name }}
+          target_commitish: ${{ github.sha }}
           generate_release_notes: true

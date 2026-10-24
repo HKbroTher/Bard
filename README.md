@@ -45,7 +45,7 @@
 | Windows | `Bard-x.y.z-win-x64.exe` |
 | Linux | `Bard-x.y.z-linux-x86_64.AppImage` / `.deb` |
 
-推送 `v1.0.0` 这样的标签，还会自动创建 GitHub Release，并附上全部安装包。
+运行时在 **version** 一栏填上版本号（如 `v1.0.1`），或者推送同名标签，打包完会自动创建 GitHub Release，并附上全部安装包。
 
 > 安装包目前没有代码签名，第一次打开时：
 > - **macOS**：在“访达”里右键点击 Bard →“打开”；或者在“系统设置 → 隐私与安全性”里点“仍要打开”。
